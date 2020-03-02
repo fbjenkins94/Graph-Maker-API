@@ -13,11 +13,17 @@ using namespace std;
 /**
  * TODO: add class header
  */
+
+class movieEdge; 
+class actorVertex;
+
 class ActorGraph {
   protected:
     // TODO: add data structures used in actor graph
 
   public:
+	  vector<actorVertex *> actorList;
+	  vector<movieEdge *> movieList;
     /* TODO */
     ActorGraph();
 
