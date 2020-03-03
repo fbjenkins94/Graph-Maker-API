@@ -72,19 +72,19 @@ class actorVertex {
 		//~actorVertex();
 };
 struct m_Compare {
-	bool operator() (const movieEdge & a, const movieEdge & b) {
-		return a.movie > b.movie;
+	bool operator() (const movieEdge * a, const movieEdge * b) {
+		return a->movie > b->movie;
 	}
 };
 struct a_Compare {
-	bool operator() (const actorVertex & a, const actorVertex & b) {
-		return a.actor > b.actor;
+	bool operator() (const actorVertex * a, const actorVertex * b) {
+		return a->actor > b->actor;
 	}
 };
     
 
-	set<actorVertex, a_Compare> actorList[255];
-      	set<movieEdge, m_Compare> movieList[146];
+	set<actorVertex *, a_Compare> actorList[255];
+      	set<movieEdge *, m_Compare> movieList[146];
 
 ActorGraph::ActorGraph() {
 	//set<actorVertex *, a_Compare> actorList[255];
@@ -144,16 +144,15 @@ bool ActorGraph::buildGraphFromFile(const char* filename) {
 	 *
 	 */
 
-	actorVertex tempA = actorVertex(actor);
+	actorVertex * tempA = new actorVertex(actor);
 	const char c = actor[0];
-	set<actorVertex, a_Compare>:: iterator itActor = actorList[c].find(tempA);
+	set<actorVertex *, a_Compare>:: iterator itActor = actorList[c].find(tempA);
 
-	movieEdge tempM = movieEdge(title, year);
-	set<movieEdge, m_Compare>:: iterator itMovie = movieList[year-1874].find(tempM);
+	movieEdge * tempM = new movieEdge(title, year);
+	set<movieEdge *, m_Compare>:: iterator itMovie = movieList[year-1874].find(tempM);
 
 	if(itActor != actorList[c].end()) {
 		//delete tempA;
-		cout<<"Actor Found "<<tempA.actor<<endl;
 		tempA = *itActor;
 		actorList[c].erase(itActor); 
 	}
@@ -161,20 +160,18 @@ bool ActorGraph::buildGraphFromFile(const char* filename) {
 		//delete tempM;
 		tempM = *itMovie;
 		movieList[year-1874].erase(itMovie);
-		tempM.actors.push_back(&tempA);
-		tempA.movies.push_back(&tempM);
+		tempM->actors.push_back(tempA);
+		tempA->movies.push_back(tempM);
 		
 		movieList[year-1874].insert(tempM);
 		actorList[c].insert(tempA);
-		cout<<"Movie Found "<<tempA.movies[0]->movie<<" "<<tempA.movies[0]->year<<endl;
 	}
 	else {
-		tempM.actors.push_back(&tempA);
-		tempA.movies.push_back(&tempM);
+		tempM->actors.push_back(tempA);
+		tempA->movies.push_back(tempM);
 
 		movieList[year-1874].insert(tempM);
 		actorList[c].insert(tempA);
-		cout<<"Movie Not Found "<<tempM.movie<<endl;
 	}
 
     }
@@ -189,109 +186,84 @@ bool ActorGraph::buildGraphFromFile(const char* filename) {
     return true;
 }
 
-/**void foundShortestPath(actorVertex & v, string & s) {
-	movieEdge e = *v.prev;
+void p(actorVertex *& v, string & s) {
+	movieEdge * e = v->prev;
 
-	while(e != NULL) {
-		e = *v.prev;
+	while(e) {
+		e = v->prev;
 		s.insert(0, ")");
-		s.insert(0, v.actor);
-		cout<<"1 "<<v.actor<<" ";
+		s.insert(0, v->actor);
 		s.insert(0, "(");
 
 		if(e) {
 			s.insert(0, "]-->");
-			s.insert(0, to_string(e.year));
-			cout<<to_string(e.year);
+			s.insert(0, to_string(e->year));
 			s.insert(0, "#@");
-			s.insert(0, e.movie);
-			cout<<" "<<e.movie<<endl;
+			s.insert(0, e->movie);
 			s.insert(0, "--[");
-			v = *e.prev;
+			v = e->prev;
 		}
 	}
 	//cout<<"variable shortestPath now has value:"<<endl;
 	//cout<<s<<endl;
-}**/
+}
 
 /* TODO */
 void ActorGraph::BFS(const string& fromActor, const string& toActor,
                      string& shortestPath) {
 	const char c = fromActor[0];
-	actorVertex nextActor = actorVertex(fromActor);
-	set<actorVertex, a_Compare>:: iterator itActor = actorList[c].find(nextActor);
+	actorVertex * nextActor = new actorVertex(fromActor);
+	set<actorVertex *, a_Compare>:: iterator itActor = actorList[c].find(nextActor);
 	
 	if(itActor != actorList[c].end()) nextActor = *itActor;
 	else return;
 
-	queue<actorVertex> actorExplore;
-	queue<actorVertex> done;
-	//vector<string> pathString = vector<string>();
+	queue<actorVertex *> actorExplore;
+	queue<actorVertex *> done;
 
-
-	nextActor.visited = true;
-	nextActor.prev = NULL;
+	nextActor->visited = true;
+	nextActor->prev = NULL;
 	actorExplore.push(nextActor);
-	//movieEdge * nextMovie;
-	vector<string> path = vector<string>();
+	
 	while(!actorExplore.empty()) {
-		cout<<"1 HEY "<<nextActor.actor<<" "<<nextActor.movies[0]->year<<endl;
 		nextActor = actorExplore.front();
 
-		string s1 = "";
-		s1 += "(";
-		s1 += nextActor.actor;
-		s1 += ")";
-		path.push_back(s1);
-		
 		//search actor's movie list
-		for(int i = 0; i < nextActor.movies.size(); i++) {
-			cout<<"HEY 2 "<<nextActor.movies[i]->movie<<endl;
-			return;
+		for(int i = 0; i < nextActor->movies.size(); i++) {
 			//if the actor's movie hasn't already been visited...
-			if(!nextActor.movies[i]->visited) {
-				string s2 = "";
-				s2 += "--[";
-				s2 += nextActor.movies[i]->movie;
-				s2 += "#@";
-				s2 += nextActor.movies[i]->year;
-				s2 +="]-->";
-				path.push_back(s2);
-
+			if(!nextActor->movies[i]->visited) {
 				//set movie's prev value to nextActor
-				nextActor.movies[i]->prev = &nextActor; 
+				nextActor->movies[i]->prev = nextActor; 
 				//visited movie = true
-				nextActor.movies[i]->visited = true;
+				nextActor->movies[i]->visited = true;
 				//search actors from actor's movie
-				for(int j = 0; j < nextActor.movies[i]->actors.size();
+				for(int j = 0; j < nextActor->movies[i]->actors.size();
 						j++) {
 				//if the actor's colleague hasn't been visited...
-					if(!nextActor.movies[i]->actors[j]->visited) {
+					if(!nextActor->movies[i]->actors[j]->visited) {
 						//set nextActor's neighbor's prev to 
 						//nextActor
-						nextActor.movies[i]->actors[j]->prev
-						    = nextActor.movies[i];
+						nextActor->movies[i]->actors[j]->prev
+						    = nextActor->movies[i];
 						//nextActor has been visited
-						nextActor.movies[i]->actors[j]->visited
+						nextActor->movies[i]->actors[j]->visited
 						    = true;
-						if(nextActor.movies[i]->actors[j]->actor
+						if(nextActor->movies[i]->actors[j]->actor
 							== toActor) {
-							nextActor = *nextActor.movies[i]->actors[j];
+							nextActor = nextActor->movies[i]->actors[j];
+							p(nextActor, shortestPath);
 
-							for(int k = 0; k < path.size(); k++) {
-								shortestPath += path[k];
-							}
 							while(!actorExplore.empty()) {
-								actorExplore.front().visited = false;
-								if(actorExplore.front().prev) {
-									actorExplore.front().prev->visited = false;
+								actorExplore.front()->visited = false;
+								if(actorExplore.front()->prev) {
+									actorExplore.front()->prev->visited = false;
 								}
 								actorExplore.pop();
 							}
 							while(!done.empty()) {
-								done.front().visited = false;
-								if(done.front().prev) {
-									done.front().prev->visited = false;
+								done.front()->visited = false;
+								if(done.front()->prev) {
+									done.front()->prev->visited = false;
 								}
 								done.pop();
 							}
@@ -299,7 +271,7 @@ void ActorGraph::BFS(const string& fromActor, const string& toActor,
 							return;
 						}
 						//add nextActor's neighbor to queue
-						actorExplore.push(*nextActor.movies[i]->actors[j]);
+						actorExplore.push(nextActor->movies[i]->actors[j]);
 					}
 				}
 			}
