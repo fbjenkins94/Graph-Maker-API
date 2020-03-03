@@ -8,6 +8,8 @@
 #include <sstream>
 #include <string>
 #include <queue>
+#include <set>
+#include <iterator>
 
 using namespace std;
 
@@ -19,7 +21,6 @@ class movieEdge {
 		unsigned int year;
 		bool visited;
 		actorVertex * prev;
-
 		vector<actorVertex *> actors;
 		
 		movieEdge(const string m, const unsigned int y) 
@@ -27,38 +28,71 @@ class movieEdge {
 			actors = vector<actorVertex *>();
 		}
 
-		struct movieCompare {
+		/**struct compare {
 			bool operator() (movieEdge *& a, movieEdge *& b) {
-				if(a->movie != b->movie)
-					return a->movie > b->movie;
-				return a->year < b->year;
+				return a->movie > b->movie;
 			}
 		};
+		struct m_find {
+			m_find( const string & movie) : movie(movie) {}
+			bool operator() (const movieEdge *& e) {
+				return e->movie == movie;
+			}
+		private: 
+			string movie;
+		};**/
 
-		~movieEdge();
+		//~movieEdge();
 };
 class actorVertex {
 	public: 
 		string actor;
-		unsigned int dist;
       		bool visited;
 		movieEdge * prev;
-
 		vector<movieEdge *> movies;
 		
-		actorVertex(const string a) : actor(a), dist(0), 
-				        visited(false), prev(0) {
+		actorVertex(const string a) : actor(a), visited(false), prev(0){
 			movies = vector<movieEdge *>();
 		}
 
-		~actorVertex();
+		/**struct compare {
+			bool operator() (actorVertex *& a, actorVertex *& b) {
+				return a->actor > b->actor;
+			}
+		};
+		struct a_find {
+			a_find( const string & actor) : actor(actor) {}
+			bool operator() (const actorVertex *& v) {
+				return v->actor == actor;
+			}
+		private: 
+			string actor;
+		};**/
+
+		//~actorVertex();
 };
+struct m_Compare {
+	bool operator() (const movieEdge & a, const movieEdge & b) {
+		return a.movie > b.movie;
+	}
+};
+struct a_Compare {
+	bool operator() (const actorVertex & a, const actorVertex & b) {
+		return a.actor > b.actor;
+	}
+};
+    
+
+	set<actorVertex, a_Compare> actorList[255];
+      	set<movieEdge, m_Compare> movieList[146];
 
 ActorGraph::ActorGraph() {
-	actorList = vector<actorVertex *>();
-	movieList = vector<movieEdge *>();
-	//map<actorVertex *> actorList;
-	//vector<movieEdge *, int, movieCompare> movieList;	
+	//set<actorVertex *, a_Compare> actorList[255];
+      	//set<movieEdge *, m_Compare> movieList[146];
+	//actorList = {0}; //names
+	//movieList = {0}; //years
+	//actorList = <int, actorVertex *>();
+	//movieList = map<string, movieEdge *>();	
 }
 
 /* Build the actor graph from dataset file.
@@ -70,8 +104,6 @@ ActorGraph::ActorGraph() {
 bool ActorGraph::buildGraphFromFile(const char* filename) {
     ifstream infile(filename);
     bool readHeader = false;
-    actorVertex * v;
-    movieEdge * e;
 
     while (infile) {
         string s;
@@ -102,57 +134,47 @@ bool ActorGraph::buildGraphFromFile(const char* filename) {
         string title(record[1]);
         int year = stoi(record[2]);
 
-        // TODO: we have an actor/movie relationship to build the graph
-	bool actorFound = false;
-	bool movieFound = false;
-	int i = actorList.size()-1;
-	int j = movieList.size()-1;
-	//see if actor node already exists
-	for(i; i >= 0; i--) {
-		if(actorList[i]->actor == actor) {
-			actorFound = true;
-			break;
-		}
+	/**
+	 * To search for movie: see if array[year-1874].find(movie) != nullptr. 
+	 * If not, then return that node with iterator, copy it and update it,
+	 * delete it and then insert the newly updated copy.
+	 *
+	 * To search for actor, see if array[name[0]].find(actor) returns !NULL.
+	 * If so, obtain through iterator and do the same as before.
+	 *
+	 */
+
+	actorVertex tempA = actorVertex(actor);
+	const char c = actor[0];
+	set<actorVertex, a_Compare>:: iterator itActor = actorList[c].find(tempA);
+
+	movieEdge tempM = movieEdge(title, year);
+	set<movieEdge, m_Compare>:: iterator itMovie = movieList[year-1874].find(tempM);
+
+	if(itActor != actorList[c].end()) {
+		//delete tempA;
+		cout<<"Actor Found "<<tempA.actor<<endl;
+		tempA = *itActor;
+		actorList[c].erase(itActor); 
 	}
-	//see if movie node already exists
-	for(j; j >= 0; j--) {
-		if(movieList[j]->movie == title && movieList[j]->year == year) {
-			movieFound = true;
-			break;
-		}
+	if(itMovie != movieList[year-1874].end()) {
+		//delete tempM;
+		tempM = *itMovie;
+		movieList[year-1874].erase(itMovie);
+		tempM.actors.push_back(&tempA);
+		tempA.movies.push_back(&tempM);
+		
+		movieList[year-1874].insert(tempM);
+		actorList[c].insert(tempA);
+		cout<<"Movie Found "<<tempA.movies[0]->movie<<" "<<tempA.movies[0]->year<<endl;
 	}
-	//if the actor node exists...
-	if(actorFound) {
-		//if movie and actor node exist
-		if(movieFound) {
-			movieList[j]->actors.push_back(actorList[i]);
-			actorList[i]->movies.push_back(movieList[j]);
-		}
-		//if movie node does not exist
-		else {
-			e = new movieEdge(title, year);
-			e->actors.push_back(actorList[i]);
-			actorList[i]->movies.push_back(e);
-			movieList.push_back(e);
-		}
-	}
-	//if the actor node doesn't exist...
 	else {
-		v = new actorVertex(actor);
-		//if movie node exists but not actor
-		if(movieFound) {
-			v->movies.push_back(movieList[j]);
-			movieList[j]->actors.push_back(v);
-			actorList.push_back(v);
-		}
-		//if neither movie nor actor nodes exist
-		else {
-			e = new movieEdge(title, year);
-			v->movies.push_back(e);
-			e->actors.push_back(v);
-			movieList.push_back(e);
-			actorList.push_back(v);
-		}
+		tempM.actors.push_back(&tempA);
+		tempA.movies.push_back(&tempM);
+
+		movieList[year-1874].insert(tempM);
+		actorList[c].insert(tempA);
+		cout<<"Movie Not Found "<<tempM.movie<<endl;
 	}
 
     }
@@ -167,96 +189,109 @@ bool ActorGraph::buildGraphFromFile(const char* filename) {
     return true;
 }
 
-void foundShortestPath(actorVertex *& v, string & s) {
-	movieEdge * e = v->prev;
+/**void foundShortestPath(actorVertex & v, string & s) {
+	movieEdge e = *v.prev;
 
-	while(e) {
-		e = v->prev;
+	while(e != NULL) {
+		e = *v.prev;
 		s.insert(0, ")");
-		s.insert(0, v->actor);
-		cout<<"1 "<<v->actor<<" ";
+		s.insert(0, v.actor);
+		cout<<"1 "<<v.actor<<" ";
 		s.insert(0, "(");
 
 		if(e) {
 			s.insert(0, "]-->");
-			s.insert(0, to_string(e->year));
-			cout<<to_string(e->year);
+			s.insert(0, to_string(e.year));
+			cout<<to_string(e.year);
 			s.insert(0, "#@");
-			s.insert(0, e->movie);
-			cout<<" "<<e->movie<<endl;
+			s.insert(0, e.movie);
+			cout<<" "<<e.movie<<endl;
 			s.insert(0, "--[");
-			v = e->prev;
+			v = *e.prev;
 		}
 	}
 	//cout<<"variable shortestPath now has value:"<<endl;
 	//cout<<s<<endl;
-}
+}**/
 
 /* TODO */
 void ActorGraph::BFS(const string& fromActor, const string& toActor,
                      string& shortestPath) {
-	actorVertex * nextActor = NULL;
-	for(int i = 0; i < actorList.size(); i++) {
-		if(actorList[i]->actor == fromActor) {
-			nextActor = actorList[i];
-			break;
-		}
-	}
-	if(!nextActor) return;
+	const char c = fromActor[0];
+	actorVertex nextActor = actorVertex(fromActor);
+	set<actorVertex, a_Compare>:: iterator itActor = actorList[c].find(nextActor);
+	
+	if(itActor != actorList[c].end()) nextActor = *itActor;
+	else return;
 
-	queue<actorVertex *> actorExplore;
-	queue<actorVertex *> done;
+	queue<actorVertex> actorExplore;
+	queue<actorVertex> done;
+	//vector<string> pathString = vector<string>();
 
 
-	nextActor->visited = true;
-	nextActor->prev = NULL;
+	nextActor.visited = true;
+	nextActor.prev = NULL;
 	actorExplore.push(nextActor);
 	//movieEdge * nextMovie;
-	int count = 0;
+	vector<string> path = vector<string>();
 	while(!actorExplore.empty()) {
-		cout<<"HEYYYYYYYYY"<<endl;
+		cout<<"1 HEY "<<nextActor.actor<<" "<<nextActor.movies[0]->year<<endl;
 		nextActor = actorExplore.front();
-		cout<<nextActor->actor<<endl;
+
+		string s1 = "";
+		s1 += "(";
+		s1 += nextActor.actor;
+		s1 += ")";
+		path.push_back(s1);
 		
 		//search actor's movie list
-		for(int i = 0; i < nextActor->movies.size(); i++) {
+		for(int i = 0; i < nextActor.movies.size(); i++) {
+			cout<<"HEY 2 "<<nextActor.movies[i]->movie<<endl;
+			return;
 			//if the actor's movie hasn't already been visited...
-			if(!nextActor->movies[i]->visited) {
+			if(!nextActor.movies[i]->visited) {
+				string s2 = "";
+				s2 += "--[";
+				s2 += nextActor.movies[i]->movie;
+				s2 += "#@";
+				s2 += nextActor.movies[i]->year;
+				s2 +="]-->";
+				path.push_back(s2);
+
 				//set movie's prev value to nextActor
-				nextActor->movies[i]->prev = nextActor; 
+				nextActor.movies[i]->prev = &nextActor; 
 				//visited movie = true
-				nextActor->movies[i]->visited = true;
+				nextActor.movies[i]->visited = true;
 				//search actors from actor's movie
-				for(int j = 0; j < nextActor->movies[i]->actors.size();
+				for(int j = 0; j < nextActor.movies[i]->actors.size();
 						j++) {
 				//if the actor's colleague hasn't been visited...
-					if(!nextActor->movies[i]->actors[j]->visited) {
+					if(!nextActor.movies[i]->actors[j]->visited) {
 						//set nextActor's neighbor's prev to 
 						//nextActor
-						nextActor->movies[i]->actors[j]->prev
-						    = nextActor->movies[i];
+						nextActor.movies[i]->actors[j]->prev
+						    = nextActor.movies[i];
 						//nextActor has been visited
-						nextActor->movies[i]->actors[j]->visited
+						nextActor.movies[i]->actors[j]->visited
 						    = true;
-						if(nextActor->movies[i]->actors[j]->actor
+						if(nextActor.movies[i]->actors[j]->actor
 							== toActor) {
-							count++;
-							nextActor = nextActor->movies[i]->actors[j];
-							nextActor->dist = count;
+							nextActor = *nextActor.movies[i]->actors[j];
 
-							foundShortestPath(nextActor, 
-									shortestPath);
+							for(int k = 0; k < path.size(); k++) {
+								shortestPath += path[k];
+							}
 							while(!actorExplore.empty()) {
-								actorExplore.front()->visited = false;
-								if(actorExplore.front()->prev) {
-									actorExplore.front()->prev->visited = false;
+								actorExplore.front().visited = false;
+								if(actorExplore.front().prev) {
+									actorExplore.front().prev->visited = false;
 								}
 								actorExplore.pop();
 							}
 							while(!done.empty()) {
-								done.front()->visited = false;
-								if(done.front()->prev) {
-									done.front()->prev->visited = false;
+								done.front().visited = false;
+								if(done.front().prev) {
+									done.front().prev->visited = false;
 								}
 								done.pop();
 							}
@@ -264,13 +299,11 @@ void ActorGraph::BFS(const string& fromActor, const string& toActor,
 							return;
 						}
 						//add nextActor's neighbor to queue
-						actorExplore.push(
-							nextActor->movies[i]->actors[j]);
+						actorExplore.push(*nextActor.movies[i]->actors[j]);
 					}
 				}
 			}
 		}
-		count++;
 		done.push(actorExplore.front());
 		actorExplore.pop();
 	}

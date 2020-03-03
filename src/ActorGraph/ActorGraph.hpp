@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <set>
 
 using namespace std;
 
@@ -22,8 +23,12 @@ class ActorGraph {
     // TODO: add data structures used in actor graph
 
   public:
-	  vector<actorVertex *> actorList;
-	  vector<movieEdge *> movieList;
+//set<actorVertex *, a_Compare> * actorList[255] = new set<actorVertex *, a_Compare>();
+//set<movieEdge *, m_Compare> * movieList[146] = new set<movieEdge *, m_Compare>();
+	  //vector<actorVertex *> actorList;
+	  //vector<movieEdge *> movieList;
+	  //set<string, actorVertex *> actorList[255];
+	  //set<string, movieEdge *> movieList[146];
     /* TODO */
     ActorGraph();
 
