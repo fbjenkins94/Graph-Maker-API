@@ -1,5 +1,12 @@
 /**
- * TODO: add file header
+ * Name: Forest Jenkins
+ * Email: fjenkins@ucsd.edu
+ * ID: A14747597
+ *
+ * File Header: ActorGraph.hpp is the header file for ActorGraph.cpp.
+ * Below are enumerated the functions that ActorGraph.cpp will inherit.
+ * The class uses two other classes: movieEdge and actorVertex that function as
+ * the elements of the set that constitute the graph in ActorGraph.cpp.
  */
 
 #ifndef ACTORGRAPH_HPP
@@ -12,38 +19,53 @@
 using namespace std;
 
 /**
- * TODO: add class header
+ * Class Header: movieEdge will carry all the data associated with IMDB movies
+ * and their relationships to actors.
  */
 
 class movieEdge; 
+/**
+ * Class Header: actorVertex will carry all the data associated with IMDB actors
+ * and their relationships to movies.
+ */
 class actorVertex;
-
+/**
+ * Class Header: ActorGraph will us movieEdge and actorVertex nodes to construct
+ * a graph representing the relationships that actors and movies have with one
+ * another.
+ */
 class ActorGraph {
-  protected:
-    // TODO: add data structures used in actor graph
+  //protected:
 
   public:
-//set<actorVertex *, a_Compare> * actorList[255] = new set<actorVertex *, a_Compare>();
-//set<movieEdge *, m_Compare> * movieList[146] = new set<movieEdge *, m_Compare>();
-	  //vector<actorVertex *> actorList;
-	  //vector<movieEdge *> movieList;
-	  //set<string, actorVertex *> actorList[255];
-	  //set<string, movieEdge *> movieList[146];
-    /* TODO */
+
+    /*
+     * constructor of the graph
+     */
     ActorGraph();
 
-    /* TODO */
+    /* 
+     * declaration of function that will build the graph with actorVertex and
+     * movieEdge nodes.
+     */
     bool buildGraphFromFile(const char* filename);
 
-    /* TODO */
+    /* 
+     * declaration of the function taht will find the shortest path between
+     * any two actors via a breadth-first search of the graph.
+     */
     void BFS(const string& fromActor, const string& toActor,
              string& shortestPath);
 
-    /* TODO */
+    /* 
+     * FINAL SUBMISSION
+     */
     void predictLink(const string& queryActor, vector<string>& predictionNames,
                      unsigned int numPrediction);
 
-    /* TODO */
+    /* 
+     * destructor of the ActorGraph structure
+     */
     ~ActorGraph();
 };
 
