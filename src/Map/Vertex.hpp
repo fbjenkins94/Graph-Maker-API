@@ -18,10 +18,14 @@ class Vertex {
     vector<Edge*> outEdges;  // the adjacency list of this vertex that contains
                              // all outgoing edges
 
-    // TODO: you may add more member variables here
+    bool done; 
+    Vertex * prev; 
+    float dist;
+    float low = -1; //low function is used for O(V + E) DFS
 
     /* The constructor that creates a new vertex */
-    Vertex(const string& name, float x, float y) : name(name), x(x), y(y) {}
+    Vertex(const string& name, float x, float y) : name(name), x(x), y(y),
+	done(false), prev(NULL), dist(-1){}
 };
 
 #endif  // VERTEX_HPP

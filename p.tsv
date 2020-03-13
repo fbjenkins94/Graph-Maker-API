@@ -1,8 +1,0 @@
-(actor)--[movie#@year]-->(actor)--...
-(Nicole Kidman)--[My Life#@1993]-->(Bradley Whitford)--[A Happening of Monumental Proportions#@2017]-->(Keanu Reeves)
-(Tim Roth)--[Emmett's Mark#@2002]-->(Gabriel Byrne)--[Played#@2006]-->(Vinnie Jones)
-(Will Smith)--[Concussion#@2015]-->(Alec Baldwin)--[Mercury Rising#@1998]-->(Bruce Willis)
-(Christopher Walken)--[Around the Bend#@2004]-->(Josh Lucas)--[An Unfinished Life#@2005]-->(Morgan Freeman)
-(Courteney Cox)--[Scream 3#@2000]-->(Neve Campbell)--[Intimate Affairs#@2001]-->(Dermot Mulroney)--[I Still See You#@2018]-->(Richard Harmon)
-(Cameron Diaz)--[Knight and Day#@2010]-->(Peter Sarsgaard)--[Flightplan#@2005]-->(Sean Bean)--[When Saturday Comes#@1996]-->(Emily Lloyd)
-(Kyra Sedgwick)--[Big Sky#@2015]-->(Frank Grillo)

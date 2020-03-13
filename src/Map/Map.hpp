@@ -35,21 +35,49 @@ class Map {
     bool addEdge(const string& name1, const string& name2);
 
   public:
-    /* TODO */
+    /**
+     * Map() will initialize a Map data structure in Map.cpp
+     */
     Map();
 
     /* Build the map graph from vertex and edge files */
     bool buildMapFromFile(const string& vertexFileName,
                           const string& edgeFileName);
 
-    /* TODO */
+    /**
+     * Input:
+     * 1) string from : node we will be searching from
+     * 2) string to : node we will be searching for in a weighted shortest path
+     * 3) vector<Vertex*> shortestPath : we will store the nodes traversed 
+     *    in the shortest path in this vector.
+     *
+     * Description: 
+     * We will run Dijkstra's shortest weighted path algorithm on the graph
+     * we constructed from the files.
+     */
     void Dijkstra(const string& from, const string& to,
                   vector<Vertex*>& shortestPath);
 
-    /* TODO */
+    /**
+     * Input:
+     * 1) vector<Edge*> MST : We will store the edges of the tree that 
+     *    constitute a minimal spanning graph in this vector and return it.
+     *
+     * Description: 
+     * as noted above, this function will build a minimal spanning tree from
+     * the graph we built using Kruskal's Algorithm.
+     */
     void findMST(vector<Edge*>& MST);
 
-    /* TODO */
+    /**
+     * Input: 
+     * 1) vector<Edge*> roads : we store the crucial edges from the graph we
+     *    constructed in this vector.
+     *
+     * Description:
+     * as noted above, this function will gather the crucial edges from the 
+     * graph we constructed using a DFS in O(V+E) time.
+     */
     void crucialRoads(vector<Edge*>& roads);
 
     /* Destructor of Map graph */
